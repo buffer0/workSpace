@@ -1,0 +1,53 @@
+/**
+ * Java addBatch Insert Exemple.
+ * by buffer0
+ * 2016.6.14
+ */
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+@Transactional
+public Map<String, Integer> buffer0FileAutoReceipt(byte[] btTxt, Map<String, String> map) {
+    Map<String, Integer> amtMap = new Hashtable<String, Integer>();
+    int batchCnt = 0; // batch count
+    Connection con = null;
+    PreparedStatement pstmt = null;
+    StringBuffer sb = new StringBuffer();
+    
+    try{
+        con = StartupLegacyManager.getDatasource(); // get connection information
+        con.setAutoCommit(false); // auto commit false..
+        sb.append(" write query someting... ex) insert into table (a,b,c,d) values (?,?,?,?) ");
+        pstmt = con.prepareStatement(sb.toString()); // create query
+        
+        while(true) {
+            // write transection
+            pstmt.setString(1, map.get("a")); // set parameter
+            pstmt.setString(2, map.get("b")); // set parameter
+            pstmt.setString(3, map.get("c")); // set parameter
+            pstmt.setString(4, map.get("d")); // set parameter
+            
+            pstmt.addBatch(); // java addBatch .. add query
+            pstmt.clearParameters(); // parameter clear
+            pstmt.clearParameters(); // batch count increase
+            
+            if(batchCnt % 500 == 0){ // execute query .. by batch count
+                pstmt.executeBatch();
+            }
+        }
+        
+        pstmt.executeBatch(); // last batch query execute..
+        
+        con.commit(); // commit
+        
+    }catch{
+        try { con.rollback(); } catch (Exception ignore) {}
+			  e.printStackTrace();
+			  throw new BaseException(e.getMessage());
+    }finally{
+        try { con.close(); pstmt.close(); } catch(Exception ee){}
+    }
+    
+    return amtMap;
+}
