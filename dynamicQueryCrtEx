@@ -1,0 +1,75 @@
+/*
+* dynamic month create and add query example.
+* by buffer0
+* 2016.1.14
+*
+* ex ) 2016.1 ~ 2016.3 = "201601", "201602", "201603"
+*      
+*/
+
+	public void listUnitReceipt(){
+		StringBuffer sb = new StringBuffer();
+	    String s_yyyymm = (String) parameterObject.get("start yyyymm parameter.."); 
+	    String e_yyyymm = (String) parameterObject.get("end yyyymm parameter.."); 
+	    
+	    int s_yyyy_i = Integer.parseInt(s_yyyymm.substring(0,4));
+	    int e_yyyy_i = Integer.parseInt(e_yyyymm.substring(0,4));
+	    int s_mm_i = Integer.parseInt(s_yyyymm.substring(4,6));
+	    int e_mm_i = Integer.parseInt(e_yyyymm.substring(4,6));
+	    
+	    int yearCnt = 0;
+	    int totalMonth = 0;
+	    
+	    yearCnt = (e_yyyy_i - s_yyyy_i + 1) * 12;   // yearCnt = ex) 201301 ~ 201512   (endYear - startYear + 1) * 12 
+	    
+	    totalMonth = yearCnt - s_mm_i + 1 - (12 - e_mm_i); // totalMonth = yearCnt - startMonth + 1  - (12 - endMonth)  
+
+	    if(totalMonth > 24){ // 24month is max.. select query to slow..
+	    	
+	    	throw new BaseException("최대 조회기간이 24개월을 넘을 수 없습니다."); 
+	    	
+	    }		
+	    
+	    String yearS = "";  // dynamic year and month
+	    
+		int j = 0;
+		int k = 0;
+		Map<String, String> map = new HashMap<String, String>();
+	
+		for(int i = 0; i < totalMonth; i++){ // create dynamic year and month
+			
+			j = s_mm_i+i;  // year change check val
+			
+			if(j > 12){
+				s_mm_i = s_mm_i - 12; // month
+				s_yyyy_i = s_yyyy_i + 1; // year
+				
+				if(String.valueOf(s_mm_i+i).length() == 1){
+					yearS = String.valueOf(s_yyyy_i)+"0"+String.valueOf(s_mm_i+i); // yyyymm
+				}else{
+					yearS = String.valueOf(s_yyyy_i)+String.valueOf(s_mm_i+i); // yyyymm
+				}
+				k++;
+				sb.append(" write query.. "+yearS+" \n");
+				
+				if(i < totalMonth-1){
+					sb.append(",  \n");
+				}
+				
+			}else{
+				
+				if(String.valueOf(s_mm_i+i).length() == 1){
+					yearS = String.valueOf(s_yyyy_i)+"0"+String.valueOf(s_mm_i+i); // yyyymm
+				}else{
+					yearS = String.valueOf(s_yyyy_i)+String.valueOf(s_mm_i+i); // yyyymm
+				}
+				k++;
+				sb.append(" write query.. "+yearS+" \n");
+				
+				if(i < totalMonth-1){
+					sb.append(",  \n");
+				}
+			}
+		}
+		
+	}
